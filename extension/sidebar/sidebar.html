@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>畫伯阿Gem</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <div class="container">
+    <!-- 頂部區域 -->
+    <div class="header">
+      <h1>畫伯阿Gem</h1>
+      <div class="header-buttons">
+        <button id="clearBtn" class="clear-btn">清除</button>
+        <button id="settingsBtn" class="settings-btn">設定</button>
+      </div>
+    </div>
+
+    <!-- 對話歷史區域 -->
+    <div class="chat-container" id="chatContainer">
+      <!-- 對話內容會動態添加在這裡 -->
+    </div>
+
+    <!-- 多圖預覽容器 -->
+    <div id="imagesPreviewContainer" class="images-preview-container" style="display: none;">
+      <div class="preview-header">
+        <span>已選取圖片</span>
+      </div>
+      <div id="imagesGrid" class="images-grid">
+        <!-- 上傳的圖片預覽會動態添加在這裡 -->
+      </div>
+    </div>
+
+    <!-- 輸入區域 -->
+    <div class="input-container">
+      <button id="uploadImageBtn" class="upload-btn">
+        +
+      </button>
+      <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+      <textarea id="messageInput" placeholder="輸入訊息..." rows="2"></textarea>
+      <button id="sendBtn" class="send-btn" style="display: none;">送出</button>
+    </div>
+
+    <!-- 設定模態視窗 -->
+    <div id="settingsModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>設定</h2>
+        <div class="form-group">
+          <label for="apiKey">API Key</label>
+          <input type="password" id="apiKey" placeholder="輸入你的 Gemini API Key">
+        </div>
+        <div class="form-group">
+          <label for="modelName">模型</label>
+          <input type="text" id="modelName" value="gemini-2.0-flash-exp-image-generation">
+        </div>
+        <button id="saveSettingsBtn" class="save-btn">儲存設定</button>
+      </div>
+    </div>
+
+    <!-- 確認清除對話模態視窗 -->
+    <div id="clearConfirmModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>確認清除</h2>
+        <p>是否刪除所有對話訊息？</p>
+        <div class="modal-buttons">
+          <button id="cancelClearBtn" class="cancel-btn">取消</button>
+          <button id="confirmClearBtn" class="confirm-btn">確認</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 圖片預覽模態視窗 -->
+    <div id="imagePreviewModal" class="modal">
+      <div class="modal-content image-preview-content">
+        <span class="close">&times;</span>
+        <img id="previewImage" src="" alt="預覽圖片">
+      </div>
+    </div>
+  </div>
+
+  <script src="../utils/storage.js"></script>
+  <script src="../utils/api.js"></script>
+  <script src="../utils/ui.js"></script>
+  <script src="sidebar.js"></script>
+</body>
+</html> 
