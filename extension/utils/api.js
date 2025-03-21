@@ -14,8 +14,25 @@ const ApiUtils = {
       // 計算開始時間
       const startTime = performance.now();
 
-      // 創建請求內容
-      let contents = this._prepareContentsWithHistory(text, imageDataArray, history);
+      // 翻譯文字為英文 (如果有文字)
+      let translatedText = text;
+      if (text && text.trim() !== '') {
+        try {
+          translatedText = await TranslationUtils.translateText(text, 'en');
+          console.log('文字已翻譯為英文:', translatedText);
+        } catch (translationError) {
+          console.warn('翻譯文字時發生錯誤，將使用原文:', translationError);
+        }
+      }
+
+      // 創建請求內容，使用翻譯後的文字
+      let contents = await this._prepareContentsWithHistory(translatedText, imageDataArray, history);
+
+      // 添加系統指令，指定回應使用繁體中文
+      /*contents.unshift({
+        role: 'system',
+        parts: [{ text: 'Please respond in Traditional Chinese (繁體中文).' }]
+      });*/
 
       // 構建 API 請求
       const requestBody = {
@@ -92,8 +109,8 @@ const ApiUtils = {
     }
   },
 
-  // 準備包含歷史記錄的請求內容
-  _prepareContentsWithHistory(text, imageDataArray, history) {
+  // 準備包含歷史記錄的請求內容，支援翻譯
+  async _prepareContentsWithHistory(text, imageDataArray, history) {
     let contents = [];
     
     // 添加歷史對話內容
