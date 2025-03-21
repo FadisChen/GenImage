@@ -6,11 +6,16 @@
   font-family: 'Microsoft JhengHei', Arial, sans-serif;
 }
 
+:root {
+  --vh: 1vh;
+}
+
 body {
   background-color: #f5f5f5;
   color: #333;
   line-height: 1.6;
-  height: 100vh;
+  height: 100vh; /* 視口高度 */
+  height: calc(var(--vh, 1vh) * 100); /* 修正移動端100vh問題 */
   overflow: hidden;
 }
 
@@ -18,9 +23,11 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   padding: 10px;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
 }
 
 /* 頂部區域樣式 */
@@ -234,6 +241,9 @@ body {
   box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
   margin-top: 10px;
   align-items: center;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .upload-btn {
@@ -443,6 +453,7 @@ body {
   .container {
     padding: 5px;
     height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
   }
 
   .header {
@@ -457,14 +468,26 @@ body {
     max-width: 85%;
   }
   
+  .chat-container {
+    padding: 5px;
+    margin: 5px 0;
+    transition: height 0.3s ease;
+  }
+  
   .input-container {
     padding: 8px;
     margin-top: 5px;
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+    border-radius: 8px;
+    z-index: 10;
   }
   
   #messageInput {
     font-size: 16px; /* 防止iOS縮放 */
     padding: 8px 12px;
+    min-height: 40px;
   }
   
   .message-image-small {
@@ -483,9 +506,12 @@ body {
   .container {
     height: auto;
     min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
   }
   
   .chat-container {
+    height: auto;
     max-height: 40vh;
+    max-height: calc(var(--vh, 1vh) * 40);
   }
 } 

@@ -56,6 +56,9 @@ async function init() {
     
     // 設置 MutationObserver 監視聊天容器變化
     setupChatContainerObserver();
+    
+    // 初始化輸入區域的位置
+    adjustForMobileKeyboard();
   } catch (error) {
     console.error('初始化應用時出錯:', error);
     UiUtils.showError('初始化應用時發生錯誤');
@@ -248,17 +251,20 @@ function setupEventListeners() {
   imagesGrid.addEventListener('click', handleImagesGridClick);
   
   // 監聽視窗大小變化事件
-  window.addEventListener('resize', () => {
-    if (UiUtils.shouldScrollToBottom(chatContainer)) {
-      UiUtils.scrollToBottom(chatContainer);
+  window.addEventListener('resize', adjustForMobileKeyboard);
+  
+  // 監聽視圖可見性變化事件
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      // 當頁面再次可見時，調整佈局
+      setTimeout(adjustForMobileKeyboard, 300);
     }
   });
   
-  // 監聽頁面可見性變化事件
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && UiUtils.shouldScrollToBottom(chatContainer)) {
-      UiUtils.scrollToBottom(chatContainer);
-    }
+  // 監聽方向變化事件
+  window.addEventListener('orientationchange', () => {
+    // 方向變化後延遲調整佈局
+    setTimeout(adjustForMobileKeyboard, 500);
   });
 }
 
@@ -522,6 +528,9 @@ async function handleSendMessage() {
     // 重設等待狀態
     isWaitingForResponse = false;
     
+    // 發送後立即調整界面以適應鍵盤
+    setTimeout(adjustForMobileKeyboard, 100);
+    
   } catch (error) {
     console.error('處理發送訊息時出錯:', error);
     UiUtils.showError('處理發送訊息時發生錯誤');
@@ -590,4 +599,27 @@ async function deleteMessage(messageId) {
     console.error('刪除訊息時出錯:', error);
     UiUtils.showError('刪除訊息時發生錯誤');
   }
+}
+
+// 為手機鍵盤調整界面
+function adjustForMobileKeyboard() {
+  const chatContainer = document.getElementById('chatContainer');
+  const inputContainer = document.querySelector('.input-container');
+  
+  if (!chatContainer || !inputContainer) return;
+  
+  // 獲取可視窗口高度
+  const viewportHeight = window.innerHeight;
+  // 獲取輸入框容器的高度
+  const inputContainerHeight = inputContainer.offsetHeight;
+  // 獲取頂部元素的高度
+  const headerHeight = document.querySelector('.header').offsetHeight;
+  // 計算聊天容器應有的高度
+  const chatContainerHeight = viewportHeight - inputContainerHeight - headerHeight - 20; // 20是額外間距
+  
+  // 設定聊天容器的高度
+  chatContainer.style.height = `${chatContainerHeight}px`;
+  
+  // 將聊天內容滾動到底部
+  UiUtils.scrollToBottom(chatContainer);
 } 

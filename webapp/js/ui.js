@@ -227,23 +227,55 @@ const UiUtils = {
   
   // 初始化移動裝置的視口調整
   initMobileViewport: function() {
-    // 處理 iOS 鍵盤事件
+    // 獲取必要的DOM元素
+    const chatContainer = document.getElementById('chatContainer');
+    const inputContainer = document.querySelector('.input-container');
     const messageInput = document.getElementById('messageInput');
+    const container = document.querySelector('.container');
     
+    // 定義一個函數來根據可見視口調整輸入框位置
+    const adjustInputPosition = () => {
+      // 獲取可視窗口高度
+      const viewportHeight = window.innerHeight;
+      // 獲取輸入框容器的高度
+      const inputContainerHeight = inputContainer.offsetHeight;
+      // 計算聊天容器應有的高度
+      const chatContainerHeight = viewportHeight - inputContainerHeight - 70; // 70是頂部和其他元素的高度預估
+      
+      // 設定聊天容器的高度
+      chatContainer.style.height = `${chatContainerHeight}px`;
+      chatContainer.style.maxHeight = `${chatContainerHeight}px`;
+      
+      // 將聊天內容滾動到底部
+      this.scrollToBottom(chatContainer);
+    };
+    
+    // 初始調整
+    adjustInputPosition();
+    
+    // 窗口大小改變時調整
+    window.addEventListener('resize', adjustInputPosition);
+    
+    // 處理 iOS 鍵盤事件
     if (messageInput) {
       // 當輸入框獲得焦點時，可能會出現虛擬鍵盤
       messageInput.addEventListener('focus', () => {
-        // 延遲捲動，等待鍵盤彈出
+        // 延遲調整，等待鍵盤彈出
         setTimeout(() => {
-          window.scrollTo(0, 0);
-          document.body.scrollTop = 0;
+          adjustInputPosition();
+          // 確保輸入框在視圖中
+          messageInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 300);
       });
       
       // 當輸入框失去焦點時
       messageInput.addEventListener('blur', () => {
-        window.scrollTo(0, 0);
+        // 延遲調整，等待鍵盤收起
+        setTimeout(adjustInputPosition, 300);
       });
+      
+      // 當輸入內容變化時，可能需要調整容器高度
+      messageInput.addEventListener('input', adjustInputPosition);
     }
     
     // 阻止 iOS 雙擊縮放
@@ -257,5 +289,15 @@ const UiUtils = {
       
       this.lastTap = now;
     }, { passive: false });
+    
+    // 處理初始視口高度
+    // 修正移動端100vh問題
+    function setVH() {
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    setVH();
+    window.addEventListener('resize', setVH);
   }
 }; 
