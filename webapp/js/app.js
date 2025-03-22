@@ -377,6 +377,14 @@ function handleChatContainerClick(event) {
     }
   }
   
+  // 處理訊息重送
+  if (event.target.classList.contains('resend-btn')) {
+    const messageId = event.target.dataset.id;
+    if (messageId) {
+      resendMessage(messageId);
+    }
+  }
+  
   // 處理圖片預覽
   if (event.target.classList.contains('message-image')) {
     const fullImageUrl = event.target.dataset.fullImage;
@@ -598,6 +606,116 @@ async function deleteMessage(messageId) {
   } catch (error) {
     console.error('刪除訊息時出錯:', error);
     UiUtils.showError('刪除訊息時發生錯誤');
+  }
+}
+
+// 重送訊息
+async function resendMessage(messageId) {
+  try {
+    // 如果正在等待回應，不允許重送訊息
+    if (isWaitingForResponse) {
+      UiUtils.showError('請等待目前的回應完成');
+      return;
+    }
+    
+    // 找到訊息在歷史記錄中的索引
+    const messageIndex = currentChatHistory.findIndex(msg => msg.id === messageId);
+    
+    if (messageIndex === -1) {
+      console.warn(`嘗試重送不存在的訊息ID: ${messageId}`);
+      return;
+    }
+    
+    // 確認這確實是使用者的訊息
+    const message = currentChatHistory[messageIndex];
+    if (message.role !== 'user') {
+      console.warn('只能重送使用者的訊息');
+      return;
+    }
+    
+    // 設置等待狀態
+    isWaitingForResponse = true;
+    
+    // 截取到該訊息（包含該訊息）的歷史紀錄
+    currentChatHistory = currentChatHistory.slice(0, messageIndex + 1);
+    
+    // 更新存儲
+    await StorageUtils.saveHistory(currentChatHistory);
+    
+    // 重新渲染對話歷史
+    renderChatHistory(currentChatHistory);
+    
+    // 獲取設定
+    const settings = await StorageUtils.getSettings();
+    
+    // 檢查 API Key
+    if (!settings.apiKey) {
+      UiUtils.showError('請先設定 API Key');
+      isWaitingForResponse = false;
+      return;
+    }
+    
+    // 添加載入指示器
+    const loadingIndicator = UiUtils.createLoadingIndicator();
+    chatContainer.appendChild(loadingIndicator);
+    
+    try {
+      // 僅發送最近10條消息作為上下文
+      const recentHistory = currentChatHistory.slice(-10);
+      
+      // 發送請求到 Gemini API
+      const response = await ApiUtils.sendToGemini(
+        message.content.text, 
+        message.content.images || [], 
+        settings.apiKey, 
+        settings.modelName,
+        recentHistory
+      );
+      
+      // 移除載入指示器
+      UiUtils.removeLoadingIndicator();
+      
+      // 創建助理訊息對象
+      const assistantMessage = {
+        id: UiUtils.generateId(),
+        role: 'assistant',
+        content: {
+          text: response.text,
+          images: response.images,
+          parts: response.parts
+        },
+        processingTime: response.processingTime,
+        timestamp: Date.now()
+      };
+      
+      // 將助理訊息添加到聊天容器
+      const assistantMessageElement = UiUtils.createAssistantMessageElement(assistantMessage);
+      chatContainer.appendChild(assistantMessageElement);
+      
+      // 捲動到底部
+      UiUtils.scrollToBottom(chatContainer);
+      
+      // 添加訊息到歷史記錄
+      currentChatHistory.push(assistantMessage);
+      await StorageUtils.saveHistory(currentChatHistory);
+      
+    } catch (error) {
+      console.error('重送訊息時出錯:', error);
+      
+      // 移除載入指示器
+      UiUtils.removeLoadingIndicator();
+      
+      // 顯示錯誤訊息
+      UiUtils.showError(`重送訊息時發生錯誤: ${error.message}`);
+    }
+    
+    // 重設等待狀態
+    isWaitingForResponse = false;
+    
+  } catch (error) {
+    console.error('處理重送訊息時出錯:', error);
+    UiUtils.showError('處理重送訊息時發生錯誤');
+    isWaitingForResponse = false;
   }
 }
 

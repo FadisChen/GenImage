@@ -33,6 +33,9 @@ const UiUtils = {
     // 添加時間戳記
     messageContent += `<div class="message-time">${this.formatTimestamp(message.timestamp)}</div>`;
     
+    // 添加重送按鈕
+    messageContent += `<button class="resend-btn" data-id="${message.id}" title="重新發送">&#8635;</button>`;
+    
     // 添加刪除按鈕
     messageContent += `<button class="delete-btn" data-id="${message.id}">&times;</button>`;
     

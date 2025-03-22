@@ -167,12 +167,39 @@ body {
   display: none;
 }
 
-.message:hover .delete-btn {
-  display: block;
+.resend-btn {
+  position: absolute;
+  top: 5px;
+  right: 30px;
+  background-color: transparent;
+  color: #aaa;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: none;
+  line-height: 1;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.message:hover .delete-btn,
+.message:hover .resend-btn {
+  display: flex;
 }
 
 .delete-btn:hover {
   color: #ff5252;
+}
+
+.resend-btn:hover {
+  color: white;
+  background-color: #4285f4;
+  transform: rotate(30deg);
 }
 
 /* 多圖預覽容器樣式 */
@@ -397,6 +424,8 @@ body {
   padding: 8px 15px;
   cursor: pointer;
   transition: background-color 0.3s;
+  min-width: 80px;
+  text-align: center;
 }
 
 .cancel-btn:hover {
@@ -411,10 +440,20 @@ body {
   padding: 8px 15px;
   cursor: pointer;
   transition: background-color 0.3s;
+  min-width: 80px;
+  text-align: center;
 }
 
 .confirm-btn:hover {
   background-color: #e04242;
+}
+
+#confirmResendBtn {
+  background-color: #4285f4;
+}
+
+#confirmResendBtn:hover {
+  background-color: #3367d6;
 }
 
 #previewImage {
