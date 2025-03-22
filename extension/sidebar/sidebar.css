@@ -183,7 +183,7 @@ body {
   color: #ff5252;
 }
 
-.resend-btn:hover, .delete-btn:hover  {
+.resend-btn:hover {
   color: white;
   background-color: #4285f4;
   transform: rotate(30deg);
