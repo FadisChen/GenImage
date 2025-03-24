@@ -18,7 +18,7 @@ const UiUtils = {
     
     // 添加文字內容
     if (message.content.text) {
-      messageContent += `<div class="message-text">${this.escapeHtml(message.content.text)}</div>`;
+      messageContent += `<div class="message-text" data-id="${message.id}">${this.escapeHtml(message.content.text)}</div>`;
     }
     
     // 添加圖片內容
@@ -40,6 +40,15 @@ const UiUtils = {
     messageContent += `<button class="delete-btn" data-id="${message.id}">&times;</button>`;
     
     messageElement.innerHTML = messageContent;
+    
+    // 添加雙擊編輯事件
+    const textElement = messageElement.querySelector('.message-text');
+    if (textElement) {
+      textElement.addEventListener('dblclick', () => {
+        this.switchToEditMode(messageElement, message);
+      });
+    }
+    
     return messageElement;
   },
   
@@ -302,5 +311,94 @@ const UiUtils = {
     
     setVH();
     window.addEventListener('resize', setVH);
-  }
-}; 
+  },
+  
+  // 將使用者訊息切換到編輯模式
+  switchToEditMode: function(messageElement, message) {
+    const textElement = messageElement.querySelector('.message-text');
+    if (!textElement) return;
+    
+    // 存儲原始文本
+    const originalText = message.content.text;
+    
+    // 創建編輯框
+    const editInput = document.createElement('textarea');
+    editInput.className = 'edit-message-input';
+    editInput.value = originalText;
+    editInput.dataset.id = message.id;
+    editInput.dataset.originalText = originalText;
+    
+    // 替換原有的文本元素
+    textElement.replaceWith(editInput);
+    
+    // 調整高度以適應內容
+    this.autoResizeTextarea(editInput);
+    
+    // 聚焦並將游標移到最後
+    editInput.focus();
+    editInput.setSelectionRange(editInput.value.length, editInput.value.length);
+    
+    // 添加按鍵事件
+    editInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        const newText = editInput.value.trim();
+        
+        // 觸發自定義事件，傳遞消息ID和新文本
+        const editEvent = new CustomEvent('message-edited', {
+          detail: {
+            messageId: message.id,
+            newText: newText,
+            originalText: originalText
+          }
+        });
+        document.dispatchEvent(editEvent);
+        
+        // 恢復為非編輯模式，但使用新文本
+        this.exitEditMode(messageElement, newText, message);
+      } else if (event.key === 'Escape') {
+        // 取消編輯
+        this.exitEditMode(messageElement, originalText, message);
+      }
+    });
+    
+    // 輸入時自動調整高度
+    editInput.addEventListener('input', () => {
+      this.autoResizeTextarea(editInput);
+    });
+    
+    // 失去焦點時也退出編輯模式
+    editInput.addEventListener('blur', () => {
+      this.exitEditMode(messageElement, originalText, message);
+    });
+  },
+  
+  // 退出編輯模式
+  exitEditMode: function(messageElement, text, message) {
+    const editInput = messageElement.querySelector('.edit-message-input');
+    if (!editInput) return;
+    
+    // 創建新的文本元素
+    const textElement = document.createElement('div');
+    textElement.className = 'message-text';
+    textElement.dataset.id = message.id;
+    textElement.innerHTML = this.escapeHtml(text);
+    
+    // 替換編輯框
+    editInput.replaceWith(textElement);
+    
+    // 重新添加雙擊事件
+    textElement.addEventListener('dblclick', () => {
+      this.switchToEditMode(messageElement, {...message, content: {...message.content, text}});
+    });
+  },
+  
+  // 自動調整文本區域高度
+  autoResizeTextarea: function(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+  },
+};
+
+// 導出工具模組
+window.UiUtils = UiUtils; 

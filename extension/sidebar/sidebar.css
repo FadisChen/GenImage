@@ -435,4 +435,18 @@ body {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-} 
+}
+
+/* 訊息編輯樣式 */
+.edit-message-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #4285f4;
+  border-radius: 4px;
+  font-size: inherit;
+  font-family: inherit;
+  background-color: #fff;
+  resize: none;
+  outline: none;
+  min-height: 60px;
+}

@@ -553,4 +553,18 @@ body {
     max-height: 40vh;
     max-height: calc(var(--vh, 1vh) * 40);
   }
-} 
+}
+
+/* 訊息編輯樣式 */
+.edit-message-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #4285f4;
+  border-radius: 4px;
+  font-size: inherit;
+  font-family: inherit;
+  background-color: #fff;
+  resize: none;
+  outline: none;
+  min-height: 60px;
+}
