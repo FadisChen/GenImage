@@ -234,10 +234,18 @@ const UiUtils = {
     editInput.focus();
     editInput.setSelectionRange(editInput.value.length, editInput.value.length);
     
+    // 標記是否已經處理過編輯結束事件
+    let isEditHandled = false;
+    
     // 添加按鍵事件
     editInput.addEventListener('keydown', event => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
+        
+        // 如果已處理過，則不再處理
+        if (isEditHandled) return;
+        isEditHandled = true;
+        
         const newText = editInput.value.trim();
         
         // 觸發自定義事件，傳遞消息ID和新文本
@@ -253,6 +261,10 @@ const UiUtils = {
         // 恢復為非編輯模式，但使用新文本
         this.exitEditMode(messageElement, newText, message);
       } else if (event.key === 'Escape') {
+        // 如果已處理過，則不再處理
+        if (isEditHandled) return;
+        isEditHandled = true;
+        
         // 取消編輯
         this.exitEditMode(messageElement, originalText, message);
       }
@@ -265,28 +277,42 @@ const UiUtils = {
     
     // 失去焦點時也退出編輯模式
     editInput.addEventListener('blur', () => {
+      // 如果已處理過，則不再處理
+      if (isEditHandled) return;
+      isEditHandled = true;
+      
       this.exitEditMode(messageElement, originalText, message);
     });
   },
   
   // 退出編輯模式
   exitEditMode: function(messageElement, text, message) {
-    const editInput = messageElement.querySelector('.edit-message-input');
-    if (!editInput) return;
-    
-    // 創建新的文本元素
-    const textElement = document.createElement('div');
-    textElement.className = 'message-text';
-    textElement.dataset.id = message.id;
-    textElement.innerHTML = this.escapeHtml(text);
-    
-    // 替換編輯框
-    editInput.replaceWith(textElement);
-    
-    // 重新添加雙擊事件
-    textElement.addEventListener('dblclick', () => {
-      this.switchToEditMode(messageElement, {...message, content: {...message.content, text}});
-    });
+    try {
+      const editInput = messageElement.querySelector('.edit-message-input');
+      if (!editInput) return;
+      
+      // 檢查元素是否仍在 DOM 中
+      if (!document.body.contains(editInput)) {
+        console.warn('編輯文本框已不在 DOM 中，忽略替換操作');
+        return;
+      }
+      
+      // 創建新的文本元素
+      const textElement = document.createElement('div');
+      textElement.className = 'message-text';
+      textElement.dataset.id = message.id;
+      textElement.innerHTML = this.escapeHtml(text);
+      
+      // 替換編輯框
+      editInput.replaceWith(textElement);
+      
+      // 重新添加雙擊事件
+      textElement.addEventListener('dblclick', () => {
+        this.switchToEditMode(messageElement, {...message, content: {...message.content, text}});
+      });
+    } catch (error) {
+      console.error('退出編輯模式時出錯:', error);
+    }
   },
   
   // 自動調整文本區域高度
